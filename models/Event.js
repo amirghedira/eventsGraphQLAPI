@@ -6,7 +6,7 @@ const EventSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     date: { type: Date, required: true },
     address: { type: String, required: true },
-    authorid: {
+    creator: {
         ref: 'User',
         type: mongoose.Schema.Types.ObjectId
     }
