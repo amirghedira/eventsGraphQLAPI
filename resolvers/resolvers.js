@@ -48,6 +48,20 @@ exports.getUser = (parent, args) => {
         })
 }
 
+exports.userLogin = async (parent, args) => {
+    console.log(parent)
+    const user = await User.findOne({ username: args.username });
+    if (user) {
+        const result = await bcrypt.compare(args.password, user.password);
+        if (result) {
+            return user
+        } else {
+            return
+        }
+    }
+    else
+        return
+}
 exports.createEvent = (parent, args) => {
     const event = new Event({
         title: args.title,
@@ -133,4 +147,32 @@ exports.deleteUser = (parent, args) => {
             console.log(err)
             return;
         })
+}
+
+exports.updateUser = async (parent, args) => {
+    try {
+        let oldUserSetting = await User.findOneAndUpdate({ _id: args.userid },
+            { $set: { username: args.username, name: args.name, surname: args.surname } })
+        return oldUserSetting;
+
+    } catch (error) {
+        console.log(error);
+        return;
+    }
+}
+
+exports.updateUserPassword = async (parent, args) => {
+    try {
+        let user = await User.findById(args.userid);
+        let result = await bcrypt.compare(args.oldpassword, user.password);
+        if (result) {
+            let hashedpass = await bcrypt.hash(args.newpassword, 11);
+            await User.updateOne({ _id: args.userid }, { $set: { password: hashedpass } })
+            return "Password Successfully changed"
+        } else {
+            return "Old password is wrong!";
+        }
+    } catch (err) {
+
+    }
 }

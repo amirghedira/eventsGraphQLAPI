@@ -14,7 +14,6 @@ const {
 } = require('graphql')
 const EventType = new GraphQLObjectType({
     name: 'event',
-    description: 'this is an event',
     fields: () => ({
         _id: { type: GraphQLNonNull(GraphQLString) },
         title: { type: GraphQLNonNull(GraphQLString) },
@@ -29,7 +28,6 @@ const EventType = new GraphQLObjectType({
 
 const UserType = new GraphQLObjectType({
     name: 'user',
-    description: 'this is a user',
     fields: () => ({
         _id: { type: GraphQLNonNull(GraphQLString) },
         username: { type: GraphQLNonNull(GraphQLString) },
@@ -47,7 +45,6 @@ const rootQueryType = new GraphQLObjectType({
     fields: () => ({
         event: {
             type: EventType,
-            description: 'get specific event with id',
             args: {
                 eventid: { type: GraphQLNonNull(GraphQLString) }
             },
@@ -55,7 +52,6 @@ const rootQueryType = new GraphQLObjectType({
         },
         user: {
             type: UserType,
-            description: 'get specific user with id',
             args: {
                 userid: { type: GraphQLNonNull(GraphQLString) }
             },
@@ -63,13 +59,19 @@ const rootQueryType = new GraphQLObjectType({
         },
         events: {
             type: GraphQLList(EventType),
-            description: 'this is list of event',
             resolve: resolvers.getEvents
         },
         users: {
             type: GraphQLList(UserType),
-            description: 'this is a list of users',
             resolve: resolvers.getUsers
+        },
+        login: {
+            type: UserType,
+            args: {
+                username: { type: GraphQLNonNull(GraphQLString) },
+                password: { type: GraphQLNonNull(GraphQLString) }
+            },
+            resolve: resolvers.userLogin
         }
 
     })
@@ -81,7 +83,6 @@ const rootMutationType = new GraphQLObjectType({
     fields: () => ({
         createEvent: {
             type: EventType,
-            description: 'create an events',
             args: {
                 title: { type: GraphQLNonNull(GraphQLString) },
                 description: { type: GraphQLNonNull(GraphQLString) },
@@ -95,7 +96,6 @@ const rootMutationType = new GraphQLObjectType({
         },
         createUser: {
             type: UserType,
-            description: 'create a user',
             args: {
                 username: { type: GraphQLNonNull(GraphQLString) },
                 name: { type: GraphQLNonNull(GraphQLString) },
@@ -106,7 +106,6 @@ const rootMutationType = new GraphQLObjectType({
         },
         deleteUser: {
             type: UserType,
-            description: 'delete a user',
             args: {
                 userid: { type: GraphQLNonNull(GraphQLString) }
             },
@@ -118,6 +117,25 @@ const rootMutationType = new GraphQLObjectType({
                 eventid: { type: GraphQLNonNull(GraphQLString) }
             },
             resolve: resolvers.deleteEvent
+        },
+        updateUser: {
+            type: UserType,
+            args: {
+                userid: { type: GraphQLNonNull(GraphQLString) },
+                username: { type: GraphQLNonNull(GraphQLString) },
+                name: { type: GraphQLNonNull(GraphQLString) },
+                surname: { type: GraphQLNonNull(GraphQLString) },
+            },
+            resolve: resolvers.updateUser
+        },
+        updateUserPassword: {
+            type: GraphQLString,
+            args: {
+                userid: { type: GraphQLNonNull(GraphQLString) },
+                newpassword: { type: GraphQLNonNull(GraphQLString) },
+                oldpassword: { type: GraphQLNonNull(GraphQLString) }
+            },
+            resolve: resolvers.updateUserPassword,
         }
 
     })
