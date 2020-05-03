@@ -59,7 +59,7 @@ exports.createEvent = (parent, args) => {
     })
     return event.save()
         .then(result => {
-            return User.updateOne({ _id: result._doc.authorid }, { $push: { events: { ...result._doc } } })
+            return User.updateOne({ _id: result._doc.creator }, { $push: { events: { ...result._doc } } })
                 .then(updateresult => {
                     console.log(updateresult)
                     return { ...result._doc }
