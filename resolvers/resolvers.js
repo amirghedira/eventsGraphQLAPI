@@ -49,7 +49,6 @@ exports.getUser = (parent, args) => {
 }
 
 exports.userLogin = async (parent, args) => {
-    console.log(parent)
     const user = await User.findOne({ username: args.username });
     if (user) {
         const result = await bcrypt.compare(args.password, user.password);
@@ -84,7 +83,6 @@ exports.createEvent = (parent, args) => {
 
         })
         .catch(err => {
-            console.log(err)
             return;
         })
 }
@@ -105,7 +103,6 @@ exports.createUser = (parent, args) => {
                     return { ...result._doc }
                 })
                 .catch(err => {
-                    console.log(err)
                     return;
                 })
         })
@@ -139,12 +136,10 @@ exports.deleteUser = (parent, args) => {
                     return user
                 })
                 .catch(err => {
-                    console.log(err)
                     return;
                 })
         })
         .catch(err => {
-            console.log(err)
             return;
         })
 }
@@ -156,7 +151,6 @@ exports.updateUser = async (parent, args) => {
         return oldUserSetting;
 
     } catch (error) {
-        console.log(error);
         return;
     }
 }
