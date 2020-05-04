@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Book = require('../models/Book');
 const Event = require('../models/Event');
-
+const jwt = require('jsonwebtoken')
 exports.getEvents = () => {
 
     return Event.find()
@@ -17,12 +17,30 @@ exports.getEvents = () => {
 exports.getEvent = (parent, args) => {
     return Event.findById(args.eventid)
         .populate('creator')
+        .exec()
         .then(event => {
             return event
         })
         .catch(err => {
             return;
         })
+}
+exports.getBookings = () => {
+
+    return Book.find()
+        .populate('user event')
+        .exec()
+        .then(bookings => {
+            console.log(bookings)
+            return bookings
+        })
+        .catch(err => {
+            console.log(err)
+            return;
+        })
+
+
+
 }
 
 exports.getUsers = () => {
@@ -53,7 +71,11 @@ exports.userLogin = async (parent, args) => {
     if (user) {
         const result = await bcrypt.compare(args.password, user.password);
         if (result) {
-            return user
+            const token = jwt.sign({
+                _id: user._id,
+                username: user.username
+            }, process.env.JWT_SECRET_KEY)
+            return { user: user, token: token }
         } else {
             return
         }
@@ -61,30 +83,61 @@ exports.userLogin = async (parent, args) => {
     else
         return
 }
-exports.createEvent = (parent, args) => {
-    const event = new Event({
-        title: args.title,
-        description: args.description,
-        price: args.price,
-        date: args.date,
-        address: args.address,
-        creator: '5eab5d476e506f0ed25ee4e4'
-    })
-    return event.save()
-        .then(result => {
-            return User.updateOne({ _id: result._doc.creator }, { $push: { events: { ...result._doc } } })
-                .then(updateresult => {
-                    console.log(updateresult)
-                    return { ...result._doc }
-                })
-                .catch(err => {
-                    return;
-                })
+exports.createEvent = (parent, args, req) => {
+    if (req.isAuth) {
 
+        const event = new Event({
+            title: args.title,
+            description: args.description,
+            price: args.price,
+            date: args.date,
+            address: args.address,
+            creator: req.user._id
         })
-        .catch(err => {
+        return event.save()
+            .then(result => {
+                return User.updateOne({ _id: result._doc.creator }, { $push: { events: { ...result._doc } } })
+                    .then(updateresult => {
+                        return Event.findOne({ _id: result._doc._id })
+                            .populate('creator')
+                            .exec()
+                            .then(event => {
+                                return event
+                            })
+                            .catch(err => {
+                                return;
+                            })
+                    })
+                    .catch(err => {
+                        return;
+                    })
+
+            })
+            .catch(err => {
+                return;
+            })
+    }
+    return;
+}
+exports.bookEvent = async (parent, args, req) => {
+    if (req.isAuth)
+        try {
+            const event = await Event.findOne({ _id: args.eventid });
+            if (event) {
+                const booking = new Book({
+                    user: req.user._id,
+                    event: event
+                })
+                await booking.save()
+                return booking;
+            } else {
+                return;
+            }
+        } catch (error) {
             return;
-        })
+        }
+    return new Error("User is not Authenticated");
+
 }
 
 exports.createUser = (parent, args) => {
@@ -144,29 +197,35 @@ exports.deleteUser = (parent, args) => {
         })
 }
 
-exports.updateUser = async (parent, args) => {
-    try {
-        let oldUserSetting = await User.findOneAndUpdate({ _id: args.userid },
-            { $set: { username: args.username, name: args.name, surname: args.surname } })
-        return oldUserSetting;
+exports.updateUser = async (parent, args, req) => {
+    if (req.isAuth)
+        try {
+            let oldUserSetting = await User.findOneAndUpdate({ _id: req.user._id },
+                { $set: { username: args.username, name: args.name, surname: args.surname } })
+            return oldUserSetting;
 
-    } catch (error) {
-        return;
-    }
+        } catch (error) {
+            return;
+        }
+    return new Error("User is not Authenticated");
 }
 
-exports.updateUserPassword = async (parent, args) => {
-    try {
-        let user = await User.findById(args.userid);
-        let result = await bcrypt.compare(args.oldpassword, user.password);
-        if (result) {
-            let hashedpass = await bcrypt.hash(args.newpassword, 11);
-            await User.updateOne({ _id: args.userid }, { $set: { password: hashedpass } })
-            return "Password Successfully changed"
-        } else {
-            return "Old password is wrong!";
-        }
-    } catch (err) {
+exports.updateUserPassword = async (parent, args, req) => {
+    if (req.isAuth)
+        try {
+            let user = await User.findById(req.user._id);
+            let result = await bcrypt.compare(args.oldpassword, user.password);
+            if (result) {
+                let hashedpass = await bcrypt.hash(args.newpassword, 11);
+                await User.updateOne({ _id: req.user._id }, { $set: { password: hashedpass } })
+                return "Password Successfully changed"
+            } else {
+                return new Error("Authenticated failed");
+            }
+        } catch (err) {
+            return new Error(err);
 
-    }
+        }
+    return new Error("User is not Authenticated");
+
 }

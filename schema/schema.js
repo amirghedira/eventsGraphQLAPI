@@ -1,6 +1,5 @@
 
 
-const jwt = require('jsonwebtoken')
 
 const resolvers = require('../resolvers/resolvers')
 
@@ -39,6 +38,25 @@ const UserType = new GraphQLObjectType({
     })
 })
 
+const BookingType = new GraphQLObjectType({
+    name: 'booking',
+    fields: () => ({
+        _id: { type: GraphQLNonNull(GraphQLString) },
+        user: { type: GraphQLNonNull(UserType) },
+        event: { type: GraphQLNonNull(EventType) },
+        createdAt: { type: GraphQLNonNull(GraphQLString) },
+        updatedAt: { type: GraphQLNonNull(GraphQLString) }
+    })
+})
+
+const loginType = new GraphQLObjectType({
+    name: 'login',
+    fields: () => ({
+        user: { type: UserType },
+        token: { type: GraphQLNonNull(GraphQLString) }
+    })
+})
+
 const rootQueryType = new GraphQLObjectType({
     name: 'Query',
     description: 'root query',
@@ -57,6 +75,10 @@ const rootQueryType = new GraphQLObjectType({
             },
             resolve: resolvers.getUser
         },
+        bookings: {
+            type: GraphQLList(BookingType),
+            resolve: resolvers.getBookings
+        },
         events: {
             type: GraphQLList(EventType),
             resolve: resolvers.getEvents
@@ -66,7 +88,7 @@ const rootQueryType = new GraphQLObjectType({
             resolve: resolvers.getUsers
         },
         login: {
-            type: UserType,
+            type: loginType,
             args: {
                 username: { type: GraphQLNonNull(GraphQLString) },
                 password: { type: GraphQLNonNull(GraphQLString) }
@@ -89,10 +111,16 @@ const rootMutationType = new GraphQLObjectType({
                 price: { type: GraphQLFloat },
                 date: { type: GraphQLNonNull(GraphQLString) },
                 address: { type: GraphQLNonNull(GraphQLString) }
-                // authorid: { type: GraphQLNonNull(GraphQLString) }
             },
             resolve: resolvers.createEvent
 
+        },
+        bookEvent: {
+            type: BookingType,
+            args: {
+                eventid: { type: GraphQLNonNull(GraphQLString) }
+            },
+            resolve: resolvers.bookEvent
         },
         createUser: {
             type: UserType,
@@ -121,7 +149,6 @@ const rootMutationType = new GraphQLObjectType({
         updateUser: {
             type: UserType,
             args: {
-                userid: { type: GraphQLNonNull(GraphQLString) },
                 username: { type: GraphQLNonNull(GraphQLString) },
                 name: { type: GraphQLNonNull(GraphQLString) },
                 surname: { type: GraphQLNonNull(GraphQLString) },
@@ -131,7 +158,6 @@ const rootMutationType = new GraphQLObjectType({
         updateUserPassword: {
             type: GraphQLString,
             args: {
-                userid: { type: GraphQLNonNull(GraphQLString) },
                 newpassword: { type: GraphQLNonNull(GraphQLString) },
                 oldpassword: { type: GraphQLNonNull(GraphQLString) }
             },
