@@ -2,12 +2,13 @@ const jwt = require('jsonwebtoken')
 
 module.exports = (req, res, next) => {
     req.isAuth = false;
+    let decodedToken = null;
     const token = req.headers.authorization;
     if (!token || token === '')
         return next()
 
     try {
-        const decodedtoken = jwt.verify(token, process.env.JWT_SECRET_KEY)
+         decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY)
     } catch (error) {
         return next()
     }
@@ -15,5 +16,6 @@ module.exports = (req, res, next) => {
         return next()
 
     req.isAuth = true;
-    req.user = decodedtoken;
+    req.user = decodedToken;
+    return next();
 }
