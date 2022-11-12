@@ -9,7 +9,7 @@ This is a very typical crud api to play with GraphQL and its utilities.
 To store this application data we have used mongoDB as our database along with `mongoose`
 which is an npm package that allow as to interact with mongoDB.
 ### Queries
-This API exposes these queries (a query in GraphQL means a request that doesnt save or store any thing on the database usually for getting data):
+This API exposes these queries (a query in GraphQL means a request that doesn't save or store anything on the database, usually for getting data):
 
 ![queries](https://amirplatform.s3.eu-central-1.amazonaws.com/project/aucz5aagagfmym0e4z1l.png)
 
