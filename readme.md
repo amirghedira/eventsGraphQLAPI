@@ -7,7 +7,7 @@ This is a very typical crud api to play with GraphQL and its utilities.
 ## Features 
 ### Database
 To store this application data we have used mongoDB as our database along with `mongoose`
-which an npm package that allow as to interact with mongoDB.
+which is an npm package that allow as to interact with mongoDB.
 ### Queries
 This API exposes these queries (a query in GraphQL means a request that doesnt save or store any thing on the database usually for getting data):
 
